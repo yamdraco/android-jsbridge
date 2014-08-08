@@ -1,0 +1,20 @@
+<script>
+
+var log = function(msg) {
+    window.Android.bridgeResponse("log", "PLEASE LOG ME DOWN: " + msg);
+}
+
+var response = function(id, result) {
+    window.Android.bridgeResponse(id, "THIS IS THE RESULT: " + result)
+}
+
+var testing = function(id, params) {
+    log("hell yeah");
+    response(id, "what")
+    setTimeout(function() {
+        log("hell yeah after a sec");
+        response(id, "what after a sec")
+    }, 3000);
+}
+
+</script>
