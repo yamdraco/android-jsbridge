@@ -1,4 +1,4 @@
-package com.bridge.js;
+package com.jsbridge.android;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -7,6 +7,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+
+import com.bridge.js.R;
 
 
 public class MainActivity extends Activity {
@@ -20,14 +22,38 @@ public class MainActivity extends Activity {
 
     JSBridge.getInstance(getApplicationContext());
 
-    Button btn = (Button) findViewById(R.id.test);
-    btn.setOnClickListener(new View.OnClickListener() {
+    Button aysncBtn = (Button) findViewById(R.id.async);
+    aysncBtn.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        JSBridge.getInstance(getApplicationContext()).runAsyncJs("testing", new JSBridgeRequest.BridgeCallback() {
+        JSBridge.getInstance(getApplicationContext()).runAsyncJs("simAsync", new JSBridgeRequest.BridgeCallback() {
+          @Override
+          public void onSuccess(String result) {
+            Log.d(TAG, "SUCCESS CALLBACK IN JAVA, RESULT: " + result);
+          }
+        });
+      }
+    });
+
+    Button insertBtn = (Button) findViewById(R.id.db_insert);
+    insertBtn.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        JSBridge.getInstance(getApplicationContext()).runAsyncJs("insert", new JSBridgeRequest.BridgeCallback() {
           @Override
           public void onSuccess(String s) {
-            Log.d(TAG, "happy success callback, result: " + s);
+          }
+        });
+      }
+    });
+
+    Button selectBtn = (Button) findViewById(R.id.db_select);
+    selectBtn.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        JSBridge.getInstance(getApplicationContext()).runAsyncJs("select", new JSBridgeRequest.BridgeCallback() {
+          @Override
+          public void onSuccess(String s) {
           }
         });
       }

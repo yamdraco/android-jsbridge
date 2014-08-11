@@ -1,20 +1,45 @@
 <script>
 
 var log = function(msg) {
-    window.Android.bridgeResponse("log", "PLEASE LOG ME DOWN: " + msg);
+  window.Android.bridgeResponse("log", msg);
 }
 
 var response = function(id, result) {
-    window.Android.bridgeResponse(id, "THIS IS THE RESULT: " + result)
+  window.Android.bridgeResponse(id, result);
 }
 
-var testing = function(id, params) {
-    log("hell yeah");
-    response(id, "what")
-    setTimeout(function() {
-        log("hell yeah after a sec");
-        response(id, "what after a sec")
-    }, 3000);
+var simAsync = function(id, params) {
+  log("LOG FROM JS FOR REQUEST (ID: " + id + ") - SIM ASYNC REQUEST BEGIN");
+  setTimeout(function() {
+    response(id, "I AM A RESPONSE FROM JS")
+    log("LOG FROM JS FOR REQUEST (ID: " + id + ") - SIM ASYNC REQUEST END");
+  }, 3000);
+}
+
+var db = openDatabase('jsbridge', '1', 'Storage for JSBridge', 2 * 1024 * 1024, function() {
+  log("database created");
+});
+
+db.transaction(function (tx) {
+  tx.executeSql('CREATE TABLE IF NOT EXISTS testing (id INTEGER PRIMARY KEY, value TEXT)');
+});
+
+var insert = function() {
+  db.transaction(function (tx) {
+    tx.executeSql('INSERT INTO testing (value) VALUES ("value here")');
+    log("NEW VALUE INSERTED IN WEBSQL");
+  })
+}
+
+var select = function() {
+  db.transaction(function (tx) {
+    tx.executeSql('SELECT * FROM testing', [], function (tx, results) {
+      var len = results.rows.length, i;
+      for (i = 0; i < len; i++) {
+        log("RESULT IN WEBSQL: " + JSON.stringify(results.rows.item(i)));
+      }
+    });
+  })
 }
 
 </script>

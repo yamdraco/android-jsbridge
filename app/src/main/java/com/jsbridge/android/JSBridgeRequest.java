@@ -1,9 +1,11 @@
-package com.bridge.js;
+package com.jsbridge.android;
 
 import java.util.Date;
 
 /**
- * Created by marvin on 7/8/14.
+ * @authors  Draco Yam, Marvin Lam
+ * @version  0.0.1
+ * @since    2014-08-07
  */
 public class JSBridgeRequest {
 

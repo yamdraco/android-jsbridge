@@ -1,23 +1,21 @@
-package com.bridge.js;
+package com.jsbridge.android;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
-import android.webkit.WebResourceResponse;
+import android.webkit.WebChromeClient;
+import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import org.json.JSONObject;
-
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Created by marvinlam on 7/8/14.
+ * @authors  Draco Yam, Marvin Lam
+ * @version  0.0.1
+ * @since    2014-08-07
  */
 public class JSBridge {
 
@@ -50,9 +48,7 @@ public class JSBridge {
   public JSBridge(Context context) {
     webview = new WebView(context);
     webview.getSettings().setJavaScriptEnabled(true);
-    webview.getSettings().setAppCacheEnabled(true);
-//        webview.getSettings().setDatabaseEnabled(true);
-//        webview.getSettings().setDomStorageEnabled(true);
+    webview.getSettings().setDatabaseEnabled(true);
     webview.setWebViewClient(new WebViewClient() {
       @Override
       public void onPageFinished(WebView view, String url) {
@@ -63,6 +59,20 @@ public class JSBridge {
 
       // TODO: Error kill app
     });
+    /**
+     * onExceededDatabaseQuota and setDatabasePath are deprecated in KITKAT,
+     * previous versions need to call them to activate Web SQL in webview
+     */
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+      String databasePath = context.getDir("jsbridge", Context.MODE_PRIVATE).getPath();
+      webview.getSettings().setDatabasePath(databasePath);
+      webview.setWebChromeClient(new WebChromeClient() {
+        @Override
+        public void onExceededDatabaseQuota(String url, String databaseIdentifier, long currentQuota, long estimatedSize, long totalUsedQuota, WebStorage.QuotaUpdater quotaUpdater) {
+          quotaUpdater.updateQuota(estimatedSize * 2);
+        }
+      });
+    }
     webview.addJavascriptInterface(this, "Android");
     webview.loadUrl("file:///android_asset/empty.html");
   }
@@ -110,7 +120,6 @@ public class JSBridge {
    */
   private void runAsyncJs() {
     if (isReady && queue.size() > 0) {
-      Log.d(TAG, "queue running");
       JSBridgeRequest req = queue.remove(0);
 
       if (req.getParams() == null || req.getParams().isEmpty()) {
@@ -135,7 +144,6 @@ public class JSBridge {
     } else if (key.equals("log")) {
       Log.v(TAG, result);
     } else {
-
       // Notification
     }
   }
