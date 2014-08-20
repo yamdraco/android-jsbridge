@@ -12,7 +12,13 @@ buildscript {
     }
 }
 
+def isReleaseBuild() {
+  return version.contains("SNAPSHOT") == false
+}
+
 allprojects {
+    version = "0.0.1-SNAPSHOT"
+
     repositories {
         jcenter()
     }
