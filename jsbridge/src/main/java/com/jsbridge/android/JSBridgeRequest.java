@@ -18,7 +18,7 @@ public class JSBridgeRequest {
   private Date requestTime;
 
   public interface BridgeCallback {
-    void onSuccess(String s);
+    void onSuccess(String result);
   }
 
   /**

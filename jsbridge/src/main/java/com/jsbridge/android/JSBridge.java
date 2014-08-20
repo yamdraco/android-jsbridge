@@ -54,6 +54,7 @@ public class JSBridge {
       public void onPageFinished(WebView view, String url) {
         Log.v(TAG, "onPageFinished - url: " + url);
         isReady = true;
+        loadScript();
         runAsyncJs();
       }
 
@@ -78,11 +79,19 @@ public class JSBridge {
   }
 
   /**
+   * Load in a js file
+   * @param uri of the js file
+   */
+  public void loadScript(String uri) {
+    scripts.add(uri);
+  }
+
+  /**
    * Load all scripts from the scripts queue before loading the methods in javascript
    */
-  public void loadScript() {
-    if (scripts.size() > 0) {
-      webview.loadUrl("javascript:" + scripts.remove(0));
+  private void loadScript() {
+    if (isReady && scripts.size() > 0) {
+      webview.loadUrl("javascript:(function() {var script=document.createElement('script'); script.type='text/javascript'; script.src='" + scripts.remove(0) + "'; document.getElementsByTagName('head').item(0).appendChild(script);})()");
     }
     if (scripts.size() > 0) {
       loadScript();

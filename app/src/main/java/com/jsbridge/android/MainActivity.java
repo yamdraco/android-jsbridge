@@ -7,6 +7,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.bridge.js.R;
 
@@ -20,40 +21,17 @@ public class MainActivity extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    JSBridge.getInstance(getApplicationContext());
+    JSBridge.getInstance(getApplicationContext()).loadScript("./demo.js");
 
     Button aysncBtn = (Button) findViewById(R.id.async);
     aysncBtn.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        JSBridge.getInstance(getApplicationContext()).runAsyncJs("simAsync", new JSBridgeRequest.BridgeCallback() {
+        JSBridge.getInstance(getApplicationContext()).runAsyncJs("jsFunc", new JSBridgeRequest.BridgeCallback() {
           @Override
           public void onSuccess(String result) {
-            Log.d(TAG, "SUCCESS CALLBACK IN JAVA, RESULT: " + result);
-          }
-        });
-      }
-    });
-
-    Button insertBtn = (Button) findViewById(R.id.db_insert);
-    insertBtn.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        JSBridge.getInstance(getApplicationContext()).runAsyncJs("insert", new JSBridgeRequest.BridgeCallback() {
-          @Override
-          public void onSuccess(String s) {
-          }
-        });
-      }
-    });
-
-    Button selectBtn = (Button) findViewById(R.id.db_select);
-    selectBtn.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        JSBridge.getInstance(getApplicationContext()).runAsyncJs("select", new JSBridgeRequest.BridgeCallback() {
-          @Override
-          public void onSuccess(String s) {
+            Log.d(TAG, "onSuccess - result: " + result);
+            Toast.makeText(getApplicationContext(), result, Toast.LENGTH_LONG).show();
           }
         });
       }
