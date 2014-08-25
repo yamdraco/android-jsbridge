@@ -1,7 +1,9 @@
 package com.jsbridge.android;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Handler;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -27,7 +29,9 @@ public class JSBridge {
   private ArrayList<JSBridgeRequest> queue = new ArrayList<JSBridgeRequest>();                   // queue for storing request before the html is ready
   private ArrayList<String> scripts = new ArrayList<String>();                                   // script to run before the queue is run
   private WebView webview;
-  private boolean isReady = false;
+  private boolean isPageReady = false;
+  private boolean isScriptReady = false;
+  private int loadingScriptCount = 0;
 
   /**
    * make the bridge becomes singleton
@@ -53,9 +57,12 @@ public class JSBridge {
       @Override
       public void onPageFinished(WebView view, String url) {
         Log.v(TAG, "onPageFinished - url: " + url);
-        isReady = true;
-        loadScript();
-        runAsyncJs();
+        isPageReady = true;
+        if (scripts.size() > 0) {
+          loadScript();
+        } else {
+          runAsyncJs();
+        }
       }
 
       // TODO: Error kill app
@@ -84,16 +91,16 @@ public class JSBridge {
    */
   public void loadScript(String uri) {
     scripts.add(uri);
+    loadScript();
   }
 
   /**
    * Load all scripts from the scripts queue before loading the methods in javascript
    */
   private void loadScript() {
-    if (isReady && scripts.size() > 0) {
-      webview.loadUrl("javascript:(function() {var script=document.createElement('script'); script.type='text/javascript'; script.src='" + scripts.remove(0) + "'; document.getElementsByTagName('head').item(0).appendChild(script);})()");
-    }
-    if (scripts.size() > 0) {
+    if (isPageReady && scripts.size() > 0) {
+      webview.loadUrl("javascript:(function() {var script=document.createElement('script'); script.type='text/javascript'; script.src='" + scripts.remove(0) + "'; script.onload=function(){window.Android.scriptOnLoad()}; document.getElementsByTagName('head').item(0).appendChild(script);})()");
+      loadingScriptCount++;
       loadScript();
     }
   }
@@ -128,13 +135,35 @@ public class JSBridge {
    *   queue size > 0
    */
   private void runAsyncJs() {
-    if (isReady && queue.size() > 0) {
-      JSBridgeRequest req = queue.remove(0);
+    if (isPageReady && isScriptReady && queue.size() > 0) {
+      Log.d(TAG, "runAsyncJs()");
+      final JSBridgeRequest req = queue.remove(0);
 
       if (req.getParams() == null || req.getParams().isEmpty()) {
         req.setParams("''");
       }
-      webview.loadUrl("javascript:" + req.getFunc() + "(" + req.getKey() + ", " + req.getParams() + ")");
+
+      new AsyncTask<Void, Void, Void>() {
+        @Override
+        protected Void doInBackground(Void... params) {
+          return null;
+        }
+        @Override
+        protected void onPostExecute(Void result) {
+          Log.d(TAG, "run()");
+          webview.loadUrl("javascript:" + req.getFunc() + "(" + req.getKey() + ", " + req.getParams() + ")");
+        }
+      }.execute();
+
+      runAsyncJs();
+    }
+  }
+
+  @JavascriptInterface
+  public void scriptOnLoad() {
+    Log.d(TAG, "scriptOnLoad()");
+    if (--loadingScriptCount == 0) {
+      isScriptReady = true;
       runAsyncJs();
     }
   }
