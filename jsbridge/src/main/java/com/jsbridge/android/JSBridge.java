@@ -53,6 +53,9 @@ public class JSBridge {
     webview = new WebView(context);
     webview.getSettings().setJavaScriptEnabled(true);
     webview.getSettings().setDatabaseEnabled(true);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+      webview.getSettings().setAllowUniversalAccessFromFileURLs(true);
+    }
     webview.setWebViewClient(new WebViewClient() {
       @Override
       public void onPageFinished(WebView view, String url) {
